@@ -1,9 +1,11 @@
 services:
-  # A Docker web service
   - type: web
-    name: fastapi-example
+    name: bank-csv-converter
     runtime: python
     plan: free
-    autoDeploy: false
+    autoDeploy: true # Optional: Change to true for automatic redeploys on push
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0 # Ensures Render uses a modern Python version
