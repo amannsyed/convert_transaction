@@ -105,5 +105,6 @@ async def convert_csv(
         raise HTTPException(status_code=500, detail=f"Error processing CSV: {str(e)}")
 
 @app.get("/")
+@app.head("/")
 def read_root():
     return {"message": "Bank CSV Converter API is running. POST to /convert with a CSV file."}
