@@ -10,7 +10,10 @@ class AmexParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
         lower_cols = [str(c).lower().strip() for c in columns]
-        return "appears on your statement as" in lower_cols and "extended details" in lower_cols
+        # Common Amex signature markers
+        markers = ["appears on your statement as", "extended details", "reference", "town/city"]
+        matches = [m for m in markers if m in lower_cols]
+        return "description" in lower_cols and "amount" in lower_cols and len(matches) >= 1
 
     @classmethod
     def parse(cls, df: pd.DataFrame) -> List[Dict]:
