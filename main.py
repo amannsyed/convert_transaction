@@ -1,6 +1,8 @@
 import io
 import logging
+import sys
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Query
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from typing import Optional
 import pandas as pd
@@ -8,10 +10,24 @@ import numpy as np
 
 from parsers import AmexParser, BankOfScotlandParser, RevolutParser, StarlingParser, MockParser, MonzoParser, StandardParser
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Robust logging for production (Render)
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger("bank-converter")
 
 app = FastAPI(title="Bank CSV Converter API")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
 
 PARSERS_MAP = {
     "amex": AmexParser,
@@ -44,15 +60,28 @@ async def convert_csv(
     try:
         content = await file.read()
         
-        # Fast separator sniffing to avoid engine='python' hanging on large files
-        sample = content[:2048]
+        # Detect encoding and handle BOM
+        import charset_normalizer
+        results = charset_normalizer.from_bytes(content).best()
+        encoding = results.encoding if results else 'utf-8'
+        
+        # Fast separator sniffing
+        sample = content[:4096]
         delimiter = ','
         if sample.count(b'\t') > sample.count(b','):
             delimiter = '\t'
+        elif sample.count(b';') > sample.count(b','):
+            delimiter = ';'
             
-        df = pd.read_csv(io.BytesIO(content), sep=delimiter)
+        logger.debug(f"Loading CSV with encoding: {encoding}, delimiter: {delimiter}")
         
-        logger.debug(f"Successfully loaded CSV into Pandas using separator '{delimiter}'. Columns detected: {df.columns.tolist()}")
+        df = pd.read_csv(io.BytesIO(content), sep=delimiter, encoding=encoding)
+        
+        # Strip whitespace and hidden characters from column names
+        df.columns = [str(c).strip().replace('\ufeff', '').replace('\ufeff', '') for c in df.columns]
+        detected_cols = [c.lower() for c in df.columns]
+        
+        logger.debug(f"Cleaned columns detected: {detected_cols}")
         
         selected_parser = None
         
