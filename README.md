@@ -1,9 +1,20 @@
-# Bank CSV Conversion API
+# Bank CSV Conversion API & Finance Flow Backend
 
-A lightweight, robust FastAPI wrapper that automatically detects your bank statement's origin (currently supporting **Amex**, **Bank of Scotland**, **Revolut**, **Monzo**, **Starling**, and a **Standard** pass-through) and dynamically converts it into a unified, consolidated schema.
+A unified cloud backend orchestrating the **Finance Flow** suite. It provides a lightweight, robust FastAPI wrapper that automatically detects your bank statement's origin (currently supporting **Amex**, **Bank of Scotland**, **Revolut**, **Monzo**, **Starling**, and a **Standard** pass-through) and dynamically converts it into a unified, consolidated schema.
 
-## Standardized Output Schema
-No matter what columns the bank provides, this tool standardizes records to:
+Additionally, this service serves as the core proxy managing active connections to the **Google Sheets API** for statement sync logic and the **Frankfurter API** for live exchange rate calculations for the Finance Flow frontend dashboard.
+
+## Unified Features & API Routes
+
+- **POST `/convert`**: Normalizes local bank CSV definitions.
+- **GET `/api/health`**: Diagnostic endpoint fetching current service account credentials.
+- **GET `/api/rates`**: Secure proxy handling Frankfurt Exchange Rate conversions cleanly with explicit browser caching prevention and timeout safety.
+- **GET, POST, PUT, DELETE `/api/sheets`**: Complete CRUD orchestration to actively sync transactions natively into configured Google Spreadsheets.
+
+---
+
+## Standardized CSV Output Schema
+No matter what columns the local bank provides, this tool standardizes records to:
 - `Date` (ISO Format: `YYYY-MM-DD`)
 - `Type` (`expense` or `income`)
 - `Category`
