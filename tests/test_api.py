@@ -68,6 +68,51 @@ def test_csv_output_query():
         print("Headers:", response.headers.get("content-type"))
         print("Content snippit:", response.text[:60])
 
+from unittest.mock import patch, MagicMock, AsyncMock
+
+def test_api_health():
+    print("Testing /api/health...")
+    with patch.dict("os.environ", {"GOOGLE_SERVICE_ACCOUNT_EMAIL": "test@test.com", "GOOGLE_SERVICE_ACCOUNT_JSON": '{"client_email": "mock@test.com"}'}):
+        response = client.get("/api/health")
+        print("Status:", response.status_code)
+        print(json.dumps(response.json(), indent=2))
+
+def test_api_rates():
+    print("Testing /api/rates...")
+    with patch("api.httpx.AsyncClient") as mock_client_class:
+        mock_client = AsyncMock()
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"rates": {"USD": 1.1}}
+        mock_response.raise_for_status.return_value = None
+        mock_client.get.return_value = mock_response
+        
+        # AsyncMock __aenter__ return value config for async context manager
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        
+        response = client.get("/api/rates?from=EUR&to=USD")
+        print("Status:", response.status_code)
+        print(json.dumps(response.json(), indent=2))
+
+def test_api_sheets_get():
+    print("Testing /api/sheets GET...")
+    with patch("api.get_sheets_client") as mock_client_getter, patch("api.get_file_metadata") as mock_metadata:
+        mock_sheets = MagicMock()
+        mock_drive = MagicMock()
+        mock_client_getter.return_value = (mock_sheets, mock_drive, "test-sheet-id")
+        
+        # Mocking basic spreadsheet response
+        mock_metadata.return_value = {"mimeType": "application/vnd.google-apps.spreadsheet"}
+        mock_sheets.spreadsheets().values().get().execute.return_value = {
+            "values": [
+                ["Date", "Type", "Category", "Amount", "Bank", "Merchant", "Note", "ID"],
+                ["2024-01-01", "expense", "Groceries", "50", "TestBank", "Store", "", "123"]
+            ]
+        }
+        
+        response = client.get("/api/sheets", headers={"x-sheet-id": "test-sheet-id"})
+        print("Status:", response.status_code)
+        print(json.dumps(response.json(), indent=2))
+
 if __name__ == "__main__":
     test_auto_detect()
     test_specify_bank()
@@ -77,3 +122,6 @@ if __name__ == "__main__":
     test_csv_output()
     test_standard_output()
     test_csv_output_query()
+    test_api_health()
+    test_api_rates()
+    test_api_sheets_get()

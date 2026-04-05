@@ -1,6 +1,8 @@
 import io
 import logging
 import sys
+from dotenv import load_dotenv
+load_dotenv()
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
@@ -9,6 +11,7 @@ import pandas as pd
 import numpy as np
 
 from parsers import AmexParser, BankOfScotlandParser, RevolutParser, StarlingParser, MockParser, MonzoParser, StandardParser
+from api import router as finance_router
 
 # Robust logging for production (Render)
 logging.basicConfig(
@@ -28,6 +31,8 @@ app.add_middleware(
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
 )
+
+app.include_router(finance_router)
 
 PARSERS_MAP = {
     "amex": AmexParser,
