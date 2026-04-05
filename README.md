@@ -8,7 +8,7 @@ Additionally, this service serves as the core proxy managing active connections 
 
 - **POST `/convert`**: Normalizes local bank CSV definitions.
 - **GET `/api/health`**: Diagnostic endpoint fetching current service account credentials.
-- **GET `/api/rates`**: Secure proxy handling Frankfurt Exchange Rate conversions cleanly with explicit browser caching prevention and timeout safety.
+- **GET `/api/rates`**: Secure proxy handling Frankfurter Exchange Rate conversions cleanly with explicit browser caching prevention and timeout safety.
 - **GET, POST, PUT, DELETE `/api/sheets`**: Complete CRUD orchestration to actively sync transactions natively into configured Google Spreadsheets.
 
 ---

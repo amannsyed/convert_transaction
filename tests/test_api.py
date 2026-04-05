@@ -41,7 +41,6 @@ def test_monzo():
     with open("tests/data/user_test_format_3.csv", "rb") as f:
         response = client.post("/convert", files={"file": ("stmt.csv", f, "text/csv")})
         print("Status:", response.status_code)
-        import json
         print(json.dumps(response.json(), indent=2))
 
 def test_csv_output():
@@ -57,7 +56,6 @@ def test_standard_output():
     with open("tests/data/user_test_format_1.csv", "rb") as f:
         response = client.post("/convert", files={"file": ("stmt.csv", f, "text/csv")})
         print("Status:", response.status_code)
-        import json
         print(json.dumps(response.json(), indent=2))
 
 def test_csv_output_query():

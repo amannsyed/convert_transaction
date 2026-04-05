@@ -8,14 +8,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from typing import Optional
 import pandas as pd
-import numpy as np
 
 from parsers import AmexParser, BankOfScotlandParser, RevolutParser, StarlingParser, MockParser, MonzoParser, StandardParser
 from api import router as finance_router
 
 # Robust logging for production (Render)
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[logging.StreamHandler(sys.stdout)]
 )
@@ -26,7 +25,7 @@ app = FastAPI(title="Bank CSV Converter API")
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allows all origins
+    allow_origins=["https://amannsyed.github.io"],
     allow_credentials=True,
     allow_methods=["*"],  # Allows all methods
     allow_headers=["*"],  # Allows all headers
@@ -83,7 +82,7 @@ async def convert_csv(
         df = pd.read_csv(io.BytesIO(content), sep=delimiter, encoding=encoding)
         
         # Strip whitespace and hidden characters from column names
-        df.columns = [str(c).strip().replace('\ufeff', '').replace('\ufeff', '') for c in df.columns]
+        df.columns = [str(c).strip().replace('\ufeff', '') for c in df.columns]
         detected_cols = [c.lower() for c in df.columns]
         
         logger.debug(f"Cleaned columns detected: {detected_cols}")

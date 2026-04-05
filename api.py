@@ -94,7 +94,6 @@ def health_check():
 @router.get("/rates")
 async def get_rates(from_currency: str = Query(..., alias="from"), to_currency: str = Query(..., alias="to")):
     from fastapi.responses import JSONResponse
-    logger.info(f"Rate conversion requested: {from_currency} -> {to_currency}")
     if not from_currency or not to_currency:
         return JSONResponse(status_code=400, content={"error": "Missing from or to query params"})
         
@@ -111,8 +110,8 @@ async def get_rates(from_currency: str = Query(..., alias="from"), to_currency: 
             )
             logger.info(f"Frankfurter Status Code: {response.status_code}")
             logger.debug(f"Redirect history: {response.history}")
-            logger.info(f"Frankfurter Response Headers: {response.headers}")
-            logger.info(f"Frankfurter Response Body: {response.text}")
+            logger.debug(f"Frankfurter Response Headers: {response.headers}")
+            logger.debug(f"Frankfurter Response Body: {response.text}")
             
             if not response.is_success:
                 logger.error(f"Frankfurter error {response.status_code}: {response.text}")
@@ -206,7 +205,8 @@ async def post_sheets(transaction: dict = Body(...), x_sheet_id: Optional[str] =
             
             updated_csv = csv_data + out.getvalue()
             
-            media = build('http', 'media').MediaIoBaseUpload(
+            from googleapiclient.http import MediaIoBaseUpload
+            media = MediaIoBaseUpload(
                 io.BytesIO(updated_csv.encode('utf-8')),
                 mimetype='text/csv',
                 resumable=True

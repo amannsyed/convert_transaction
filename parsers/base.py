@@ -24,11 +24,11 @@ class BaseParser(ABC):
             for fmt in formats:
                 try:
                     return pd.to_datetime(date_str, format=fmt).strftime('%Y-%m-%d')
-                except:
+                except (ValueError, TypeError):
                     continue
         
         # Fallback to generic parsing
         try:
-            return pd.to_datetime(date_str, infer_datetime_format=True).strftime('%Y-%m-%d')
-        except:
+            return pd.to_datetime(date_str).strftime('%Y-%m-%d')
+        except (ValueError, TypeError):
             return None
