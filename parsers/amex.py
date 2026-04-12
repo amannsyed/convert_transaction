@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class AmexParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
-        lower_cols = [str(c).lower().strip() for c in columns]
+        lower_cols = cls._normalize_columns(columns)
         is_full = "extended details" in lower_cols and "appears on your statement as" in lower_cols
         is_simple = lower_cols == ["date", "description", "amount"]
         return is_full or is_simple
@@ -19,9 +19,8 @@ class AmexParser(BaseParser):
         logger.debug(f"AmexParser instructed to parse {len(df)} rows.")
         records = []
         for index, row in df.iterrows():
-            # Handle numeric conversion safely
             try:
-                amt = float(row.get("Amount", 0))
+                amt = cls._parse_amount(row.get("Amount", 0))
             except Exception as e:
                 logger.warning(f"AmexParser issue casting amount at row {index}: {e}")
                 amt = 0.0

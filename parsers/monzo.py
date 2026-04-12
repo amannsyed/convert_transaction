@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class MonzoParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
-        lower_cols = [str(c).lower().strip() for c in columns]
+        lower_cols = cls._normalize_columns(columns)
         return "transaction id" in lower_cols and "emoji" in lower_cols and "notes and #tags" in lower_cols
 
     @classmethod
@@ -18,7 +18,7 @@ class MonzoParser(BaseParser):
         records = []
         for index, row in df.iterrows():
             try:
-                amt = float(row.get("Amount", 0))
+                amt = cls._parse_amount(row.get("Amount", 0))
             except Exception as e:
                 logger.warning(f"MonzoParser issue casting amount at row {index}: {e}")
                 amt = 0.0

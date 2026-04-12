@@ -66,6 +66,35 @@ def test_csv_output_query():
         print("Headers:", response.headers.get("content-type"))
         print("Content snippit:", response.text[:60])
 
+def test_standard_output_with_id_column():
+    print("Testing Standard Parser with optional ID column...")
+    csv_data = """Date,Type,Category,Amount,Bank,Merchant,Note,ID
+2026-03-22,expense,Food,15.50,Amex,McDonalds,Lunch,abc123
+"""
+    response = client.post("/convert", files={"file": ("stmt.csv", csv_data.encode("utf-8"), "text/csv")})
+    print("Status:", response.status_code)
+    print(json.dumps(response.json(), indent=2))
+    assert response.status_code == 200
+    assert response.json()["data"][0]["ID"] == "abc123"
+
+def test_invalid_output_format():
+    print("Testing invalid output format rejection...")
+    with open("tests/data/user_test_format_3.csv", "rb") as f:
+        response = client.post("/convert", files={"file": ("stmt.csv", f, "text/csv")}, data={"output_format": "xml"})
+        print("Status:", response.status_code)
+        print(json.dumps(response.json(), indent=2))
+        assert response.status_code == 400
+        assert "Unsupported output_format" in response.json()["detail"]
+
+def test_missing_filename_defaults():
+    print("Testing missing filename handling...")
+    csv_data = """Date,Type,Category,Amount,Bank,Merchant,Note
+2026-03-22,expense,Food,15.50,Amex,McDonalds,Lunch
+"""
+    response = client.post("/convert", files={"file": (None, csv_data.encode("utf-8"), "text/csv")})
+    print("Status:", response.status_code)
+    print(json.dumps(response.json(), indent=2))
+
 from unittest.mock import patch, MagicMock, AsyncMock
 
 def test_api_health():
@@ -120,6 +149,9 @@ if __name__ == "__main__":
     test_csv_output()
     test_standard_output()
     test_csv_output_query()
+    test_standard_output_with_id_column()
+    test_invalid_output_format()
+    test_missing_filename_defaults()
     test_api_health()
     test_api_rates()
     test_api_sheets_get()

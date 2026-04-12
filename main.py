@@ -54,11 +54,15 @@ async def convert_csv(
     final_format = (output_format or q_output_format or "json").strip().lower().strip('"')
     final_bank = (bank or q_bank)
     if final_bank: final_bank = final_bank.strip().lower().strip('"')
+    filename = file.filename or "statement.csv"
 
-    logger.info(f"Received request to convert statement: {file.filename} (Format: {final_format})")
+    if final_format not in {"json", "csv"}:
+        raise HTTPException(status_code=400, detail="Unsupported output_format. Use 'json' or 'csv'.")
+
+    logger.info(f"Received request to convert statement: {filename} (Format: {final_format})")
     
-    if not file.filename.endswith('.csv') and not file.filename.endswith('.txt'):
-        logger.warning(f"Rejected file {file.filename}: not a CSV or TXT format.")
+    if not filename.lower().endswith('.csv') and not filename.lower().endswith('.txt'):
+        logger.warning(f"Rejected file {filename}: not a CSV or TXT format.")
         raise HTTPException(status_code=400, detail="Uploaded file must be a CSV or TXT")
 
     try:
@@ -122,7 +126,6 @@ async def convert_csv(
         if final_format == "csv":
             out_df = pd.DataFrame(records)
             csv_str = out_df.to_csv(index=False)
-            filename = file.filename if file.filename else "statement.csv"
             return Response(
                 content=csv_str,
                 media_type="text/csv",

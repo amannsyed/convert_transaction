@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class BankOfScotlandParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
-        lower_cols = [str(c).lower().strip() for c in columns]
+        lower_cols = cls._normalize_columns(columns)
         return "sort code" in lower_cols and "transaction type" in lower_cols and "balance" in lower_cols
 
     @classmethod
@@ -21,13 +21,13 @@ class BankOfScotlandParser(BaseParser):
             credit = row.get("Credit Amount")
             
             try:
-                debit_val = float(debit) if pd.notnull(debit) else 0.0
+                debit_val = cls._parse_amount(debit)
             except Exception as e:
                 logger.warning(f"BankOfScotlandParser issue casting debit at row {index}: {e}")
                 debit_val = 0.0
                 
             try:
-                credit_val = float(credit) if pd.notnull(credit) else 0.0
+                credit_val = cls._parse_amount(credit)
             except Exception as e:
                 logger.warning(f"BankOfScotlandParser issue casting credit at row {index}: {e}")
                 credit_val = 0.0

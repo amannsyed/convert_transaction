@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class StandardParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
-        lower_cols = [str(c).lower().strip() for c in columns]
+        lower_cols = cls._normalize_columns(columns)
         required = ["date", "type", "category", "amount", "bank", "merchant", "note"]
         return all(c in lower_cols for c in required)
 

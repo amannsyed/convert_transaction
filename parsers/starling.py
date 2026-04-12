@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class StarlingParser(BaseParser):
     @classmethod
     def can_handle(cls, columns: List[str]) -> bool:
-        lower_cols = [str(c).lower().strip() for c in columns]
+        lower_cols = cls._normalize_columns(columns)
         return "counter party" in lower_cols and "spending category" in lower_cols
 
     @classmethod
@@ -25,7 +25,7 @@ class StarlingParser(BaseParser):
                 
         for index, row in df.iterrows():
             try:
-                amt = float(row.get(amount_col, 0))
+                amt = cls._parse_amount(row.get(amount_col, 0))
             except Exception as e:
                 logger.warning(f"StarlingParser issue casting amount at row {index}: {e}")
                 amt = 0.0
