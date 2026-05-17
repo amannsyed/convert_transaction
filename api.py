@@ -2,9 +2,12 @@ import os
 import json
 import logging
 from typing import Optional, List, Dict, Any
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Header, HTTPException, Query, Body
 import httpx
+# pyrefly: ignore [missing-import]
 from google.oauth2 import service_account
+# pyrefly: ignore [missing-import]
 from googleapiclient.discovery import build
 import csv
 import io
@@ -93,6 +96,7 @@ def health_check():
 
 @router.get("/rates")
 async def get_rates(from_currency: str = Query(..., alias="from"), to_currency: str = Query(..., alias="to")):
+    # pyrefly: ignore [missing-import]
     from fastapi.responses import JSONResponse
     if not from_currency or not to_currency:
         return JSONResponse(status_code=400, content={"error": "Missing from or to query params"})
@@ -205,6 +209,7 @@ async def post_sheets(transaction: dict = Body(...), x_sheet_id: Optional[str] =
             
             updated_csv = csv_data + out.getvalue()
             
+            # pyrefly: ignore [missing-import]
             from googleapiclient.http import MediaIoBaseUpload
             media = MediaIoBaseUpload(
                 io.BytesIO(updated_csv.encode('utf-8')),
@@ -291,6 +296,7 @@ async def delete_sheets(item_id: str, x_sheet_id: Optional[str] = Header(None, a
             updated_csv = out.getvalue()
             
             # actually we should import MediaIoBaseUpload from googleapiclient.http
+            # pyrefly: ignore [missing-import]
             from googleapiclient.http import MediaIoBaseUpload
             media = MediaIoBaseUpload(
                 io.BytesIO(updated_csv.encode('utf-8')),
@@ -380,6 +386,7 @@ async def put_sheets_batch(transactions: list = Body(...), x_sheet_id: Optional[
                 t.get("id", "")
             ])
 
+        # pyrefly: ignore [missing-import]
         from googleapiclient.http import MediaIoBaseUpload
 
         if metadata and metadata.get('mimeType') == 'text/csv':
@@ -437,6 +444,7 @@ async def put_sheets(item_id: str, transaction: dict = Body(...), x_sheet_id: Op
             item_id
         ]
         
+        # pyrefly: ignore [missing-import]
         from googleapiclient.http import MediaIoBaseUpload
 
         if metadata and metadata.get('mimeType') == 'text/csv':
