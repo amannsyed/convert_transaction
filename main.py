@@ -1,10 +1,14 @@
 import io
 import logging
 import sys
+# pyrefly: ignore [missing-import]
 from dotenv import load_dotenv
 load_dotenv()
+# pyrefly: ignore [missing-import]
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Query
+# pyrefly: ignore [missing-import]
 from fastapi.middleware.cors import CORSMiddleware
+# pyrefly: ignore [missing-import]
 from fastapi.responses import Response
 from typing import Optional
 import pandas as pd
@@ -69,6 +73,7 @@ async def convert_csv(
         content = await file.read()
         
         # Detect encoding and handle BOM
+        # pyrefly: ignore [missing-import]
         import charset_normalizer
         results = charset_normalizer.from_bytes(content).best()
         encoding = results.encoding if results else 'utf-8'
